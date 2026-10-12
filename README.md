@@ -7,6 +7,7 @@ A full-stack machine-learning demonstrator for spam and ham **message text**, wi
 - Current raw file: `data\raw\SMSSpamCollection.tsv`, 5,572 parsed rows (`ham`: 4,825; `spam`: 747), SHA-256 `55341228082b25b832a5868a5ab4b038142a57f70c676c123280af6ff457fe46`.
 - The file is an extracted UCI archive copy. Kaggle API credentials and the exact Kaggle archive are not present locally, so the file's Kaggle-download provenance has **not** been verified.
 - The selected saved pipeline is scikit-learn `TfidfVectorizer` + `LinearSVC`. Training evaluation uses a stratified held-out 20% test split.
+- Source code is published on GitHub at `dhanu-2505/Email-Spam-Classifier`; Render/Vercel deployment has not been performed.
 - The API and frontend have been exercised locally. Public deployment is pending and no public URL is claimed.
 - The UI is split by public/auth/dashboard/feature routes; the Analytics page loads Recharts only when that feature is selected.
 

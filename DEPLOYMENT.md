@@ -1,6 +1,6 @@
 # Deployment Guide
 
-Deployment has **not** been performed. The repository contains deployment configuration for GitHub, Render (FastAPI), and Vercel (React), but no live service URL has been provisioned or verified.
+The source is published at [dhanu-2505/Email-Spam-Classifier](https://github.com/dhanu-2505/Email-Spam-Classifier) on `main` (verified commit `1abaf7ed`). Deployment has **not** been performed: no Render or Vercel service URL has been provisioned or verified. The checked-in model is currently identified as an extracted UCI SMS archive copy, not a verified Kaggle API download.
 
 ## Before publishing
 
@@ -24,37 +24,33 @@ Deployment has **not** been performed. The repository contains deployment config
    npm run build
    ```
 
-## Publish the source to GitHub
+## GitHub source status and future updates
 
-Check that the deployable model and metadata are included while local data, credentials, environment files, and user databases are excluded:
+The repository and `origin` remote already exist. The project was pushed to `main`; do not run `git init` or replace the remote. For future changes, review the files and confirm that local data, credentials, environment files, and user databases are excluded:
 
 ```powershell
 Set-Location "E:\Email spam classifier"
 git status --short
 git check-ignore data\raw\SMSSpamCollection.tsv backend\models\users.db frontend\.env
 git check-ignore backend\models\spam_classifier.joblib backend\models\model_metadata.json
+git remote -v
 ```
 
-The model artifact and metadata are explicitly unignored because the API needs them at runtime. Review `git status` carefully and ensure no `.env`, Kaggle credentials, raw dataset, or SQLite user database is staged.
-
-Create an empty GitHub repository in the browser, then replace the remote URL below with your own:
+The model artifact and metadata are explicitly allowed because the API needs them at runtime. The ignore check for those two files should therefore report that they are **not** ignored. Review `git status` carefully and ensure no `.env`, Kaggle credentials, raw dataset, or SQLite user database is staged. After reviewing intended changes, publish them with:
 
 ```powershell
 Set-Location "E:\Email spam classifier"
-git init
-git add .
+git add -A
 git status --short
-git commit -m "Prepare spam classifier for deployment"
-git branch -M main
-git remote add origin https://github.com/YOUR-USER/YOUR-REPOSITORY.git
-git push -u origin main
+git commit -m "Describe the change"
+git push origin main
 ```
 
-If this directory is already a Git repository, do not run `git init`; inspect `git status` and set the remote only if needed.
+`git add -A` stages all non-ignored changes, including the deployable model if it changes. Inspect the staged file list before committing; never stage `.env` files, Kaggle credentials, local datasets, or account databases.
 
 ## Deploy FastAPI on Render
 
-1. Create the Vercel project first with root directory `frontend`; its initial API setting can be a temporary value because no login/API checks are possible yet. Record the Vercel origin.
+1. In Vercel, import the GitHub repository and set the project root directory to `frontend`. This initial setup is only to obtain the assigned frontend origin; do not deploy yet. Record that exact origin (scheme and host, no trailing slash).
 2. In Render, create a new **Blueprint** from the GitHub repository and review `render.yaml`. Supply the exact Vercel origin for the required `CORS_ORIGINS` variable when prompted.
 3. Render generates `SECRET_KEY` from the blueprint. Keep `ENVIRONMENT=production`, `AUTH_COOKIE_SECURE=true`, and `AUTH_COOKIE_SAMESITE=none`.
 4. The blueprint uses a persistent disk mounted at `/var/data` for the SQLite account database. This is needed so local account registration survives service restarts.
@@ -64,13 +60,12 @@ Do not set `MODEL_PATH` to a machine-specific Windows path. The blueprint uses `
 
 ## Deploy React on Vercel
 
-1. Import the same GitHub repository into Vercel (if it has not already been created above).
+1. In the Vercel project created above, set `VITE_API_BASE_URL` to the actual Render service base URL (for example `https://YOUR-SERVICE.onrender.com`, without a trailing slash). Do not use the example URL literally.
 2. Set the project **Root Directory** to `frontend`.
-3. Set `VITE_API_BASE_URL` to the actual Render service base URL (for example `https://YOUR-SERVICE.onrender.com`, without a trailing slash). Do not use the example URL literally.
-4. Build command: `npm run build`; output directory: `dist`.
-5. Redeploy after setting the real API URL. `frontend\vercel.json` routes direct page requests back to the SPA entry point.
+3. Build command: `npm run build`; output directory: `dist`.
+4. Deploy. `frontend\vercel.json` routes direct page requests back to the SPA entry point.
 
-The backend must allow the exact Vercel origin in `CORS_ORIGINS`; credentials are enabled for the cross-origin secure session cookie. Browser privacy settings may still restrict third-party cookies when the frontend and backend use different site domains; verify the actual deployed login flow.
+After Vercel assigns the final production origin, update Render's `CORS_ORIGINS` to exactly that origin and redeploy the backend. Credentials are enabled for the cross-origin secure session cookie. Browser privacy settings may still restrict third-party cookies when the frontend and backend use different site domains; verify the actual deployed login flow.
 
 ## Verify a real deployment
 
