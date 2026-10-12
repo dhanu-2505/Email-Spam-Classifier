@@ -1,6 +1,6 @@
 # Deployment Guide
 
-The source is published at [dhanu-2505/Email-Spam-Classifier](https://github.com/dhanu-2505/Email-Spam-Classifier) on `main` (verified commit `1abaf7ed`). Deployment has **not** been performed: no Render or Vercel service URL has been provisioned or verified. The checked-in model is currently identified as an extracted UCI SMS archive copy, not a verified Kaggle API download.
+The source is published at [dhanu-2505/Email-Spam-Classifier](https://github.com/dhanu-2505/Email-Spam-Classifier). This workspace has not verified the current public Render/Vercel URLs. The authentication changes described here are local until committed, pushed, and deployed. The checked-in model is currently identified as an extracted UCI SMS archive copy, not a verified Kaggle API download.
 
 ## Before publishing
 
@@ -26,7 +26,7 @@ The source is published at [dhanu-2505/Email-Spam-Classifier](https://github.com
 
 ## GitHub source status and future updates
 
-The repository and `origin` remote already exist. The project was pushed to `main`; do not run `git init` or replace the remote. For future changes, review the files and confirm that local data, credentials, environment files, and user databases are excluded:
+The repository and `origin` remote already exist; do not run `git init` or replace the remote. For these authentication changes, review the files and confirm that local data, credentials, environment files, and user databases are excluded:
 
 ```powershell
 Set-Location "E:\Email spam classifier"
@@ -60,12 +60,19 @@ Do not set `MODEL_PATH` to a machine-specific Windows path. The blueprint uses `
 
 ## Deploy React on Vercel
 
-1. In the Vercel project created above, set `VITE_API_BASE_URL` to the actual Render service base URL (for example `https://YOUR-SERVICE.onrender.com`, without a trailing slash). Do not use the example URL literally.
-2. Set the project **Root Directory** to `frontend`.
-3. Build command: `npm run build`; output directory: `dist`.
-4. Deploy. `frontend\vercel.json` routes direct page requests back to the SPA entry point.
+1. Set the project **Root Directory** to `frontend`.
+2. Build command: `npm run build`; output directory: `dist`.
+3. Deploy. `frontend\vercel.json` sends `/api/*` through a same-origin rewrite to the Render API and routes other direct page requests back to the SPA entry point. Keep the rewrite destination synchronized with the actual Render URL. Do not set production `VITE_API_BASE_URL`; the browser must call the same Vercel origin so the session cookie is first-party.
 
-After Vercel assigns the final production origin, update Render's `CORS_ORIGINS` to exactly that origin and redeploy the backend. Credentials are enabled for the cross-origin secure session cookie. Browser privacy settings may still restrict third-party cookies when the frontend and backend use different site domains; verify the actual deployed login flow.
+After Vercel assigns the final production origin, update Render's `CORS_ORIGINS` to exactly that origin and redeploy the backend. Local development may call Render directly, but production browser requests go through Vercel's same-origin rewrite so browser privacy settings do not need to allow third-party cookies.
+
+### Account storage and login troubleshooting
+
+- Keep Render's `USER_DB_PATH` set to `/var/data/users.db` and the persistent disk mounted at `/var/data`. Do not point account storage at the service's temporary filesystem, where accounts may disappear on replacement or restart.
+- Production API requests use a same-origin Vercel rewrite to avoid depending on third-party cookies. If the Render hostname changes, update the rewrite destination in `frontend\vercel.json` and redeploy Vercel. Keep the browser API base relative; do not override it with a cross-site Render URL.
+- Check the Render service's deployed commit and environment settings before diagnosing a live login. These local changes do not affect production until that code is deployed.
+- In browser developer tools, inspect request URLs, HTTP status, and response details only. Production auth requests should use the Vercel origin and `/api/...` path. Registration should return `200`; duplicate email returns `409`; malformed input returns `422` without echoing submitted field values; matching login returns `200` with a session cookie, while unknown email or a wrong password returns the same generic `401`. Never share request bodies, passwords, or cookie/token values.
+- Registration creates the account but does not automatically sign the user in. It redirects to Login with a confirmation; sign in using the same email and password. Verify `/api/auth/me` succeeds after login and protected APIs return `401` after logout.
 
 ## Verify a real deployment
 
@@ -77,6 +84,8 @@ Invoke-RestMethod "$BackendUrl/health"
 ```
 
 Then open the real Vercel URL and verify Home → Login → successful login → Dashboard, protected navigation, API-backed model info/analytics/keywords, one ham prediction, one spam prediction, and logout. Confirm an unauthenticated request to a protected route is rejected. Do not report deployment as complete until these checks pass against the public URLs.
+
+After pushing changes, confirm both hosts deployed the new GitHub commit (or manually trigger production redeployment if automatic deployments are disabled) before repeating the checks.
 
 ## Local launch (Windows PowerShell)
 

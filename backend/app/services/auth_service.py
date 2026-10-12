@@ -2,8 +2,9 @@ import hashlib
 import hmac
 import secrets
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Iterator, Optional
 
 import jwt
 
@@ -12,13 +13,21 @@ from app.config import AUTH_TOKEN_MINUTES, SECRET_KEY, USER_DB_PATH
 ALGORITHM = "HS256"
 
 
-def _connection() -> sqlite3.Connection:
+@contextmanager
+def _connection() -> Iterator[sqlite3.Connection]:
     USER_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    connection = sqlite3.connect(USER_DB_PATH)
-    connection.execute(
-        "CREATE TABLE IF NOT EXISTS users (email TEXT PRIMARY KEY, password_hash TEXT NOT NULL, created_at TEXT NOT NULL)"
-    )
-    return connection
+    connection = sqlite3.connect(USER_DB_PATH, timeout=10)
+    try:
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS users (email TEXT PRIMARY KEY, password_hash TEXT NOT NULL, created_at TEXT NOT NULL)"
+        )
+        yield connection
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
 
 
 def _hash_password(password: str, salt: Optional[bytes] = None) -> str:

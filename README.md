@@ -7,8 +7,8 @@ A full-stack machine-learning demonstrator for spam and ham **message text**, wi
 - Current raw file: `data\raw\SMSSpamCollection.tsv`, 5,572 parsed rows (`ham`: 4,825; `spam`: 747), SHA-256 `55341228082b25b832a5868a5ab4b038142a57f70c676c123280af6ff457fe46`.
 - The file is an extracted UCI archive copy. Kaggle API credentials and the exact Kaggle archive are not present locally, so the file's Kaggle-download provenance has **not** been verified.
 - The selected saved pipeline is scikit-learn `TfidfVectorizer` + `LinearSVC`. Training evaluation uses a stratified held-out 20% test split.
-- Source code is published on GitHub at `dhanu-2505/Email-Spam-Classifier`; Render/Vercel deployment has not been performed.
-- The API and frontend have been exercised locally. Public deployment is pending and no public URL is claimed.
+- Source code is published on GitHub at `dhanu-2505/Email-Spam-Classifier`; this workspace has not verified any public Render/Vercel URL.
+- The API and frontend have been exercised locally. The current authentication fixes still need to be pushed and deployed before they can affect a live site.
 - The UI is split by public/auth/dashboard/feature routes; the Analytics page loads Recharts only when that feature is selected.
 
 ## Project structure
@@ -67,7 +67,7 @@ npm ci
 npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
-In Vite development mode the frontend defaults to `http://127.0.0.1:8003`; set `VITE_API_BASE_URL` in the terminal if your backend uses another port. Production builds must set `VITE_API_BASE_URL` in the hosting provider; do not copy the local development URL into a production `.env`.
+In Vite development mode the frontend defaults to `http://127.0.0.1:8003`; set `VITE_API_BASE_URL` if your backend uses another port. Production uses the same-origin `/api/*` rewrite in `frontend\vercel.json`; do not set a cross-site `VITE_API_BASE_URL` in Vercel, since third-party cookie restrictions can prevent browser sessions from working.
 
 ## API
 
@@ -93,4 +93,4 @@ Set-Location "E:\Email spam classifier\frontend"
 npm run build
 ```
 
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for GitHub, Render, and Vercel setup. Deployment remains a manual action.
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for GitHub, Render, and Vercel setup and deployment verification.

@@ -1,5 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
-  || (import.meta.env.DEV ? 'http://127.0.0.1:8003' : '');
+const API_BASE_URL = import.meta.env.DEV
+  ? import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8003'
+  : '';
 
 export class ApiError extends Error {
   constructor(message: string, public readonly status: number) {
@@ -9,10 +10,6 @@ export class ApiError extends Error {
 }
 
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
-  if (!API_BASE_URL) {
-    throw new Error('VITE_API_BASE_URL must be set for a production frontend build.');
-  }
-
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     credentials: 'include',

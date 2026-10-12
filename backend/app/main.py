@@ -2,7 +2,10 @@ import logging
 from typing import Any
 
 from fastapi import FastAPI
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.routes import router
 from app.api.auth import router as auth_router
@@ -27,6 +30,18 @@ app.add_middleware(
 
 app.include_router(router)
 app.include_router(auth_router)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_handler(_, exc: RequestValidationError) -> JSONResponse:
+    errors = [
+        {key: value for key, value in error.items() if key != "input"}
+        for error in exc.errors()
+    ]
+    return JSONResponse(
+        status_code=422,
+        content={"detail": jsonable_encoder(errors)},
+    )
 
 
 @app.get("/")

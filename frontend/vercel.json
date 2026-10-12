@@ -4,6 +4,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://email-spam-classifier-htyy.onrender.com/api/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/"
     }

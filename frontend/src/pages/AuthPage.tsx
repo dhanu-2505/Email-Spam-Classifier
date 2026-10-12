@@ -7,6 +7,7 @@ export default function AuthPage({ register, onLogin }: { register: boolean; onL
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [show, setShow] = useState(false);
+  const registered = !register && new URLSearchParams(window.location.search).get('registered') === '1';
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -15,11 +16,11 @@ export default function AuthPage({ register, onLogin }: { register: boolean; onL
     try {
       if (register) {
         await api('/api/auth/register', { method: 'POST', body: JSON.stringify({ email, password }) });
-        window.history.pushState({}, '', '/login');
-        window.dispatchEvent(new PopStateEvent('popstate'));
+        navigate('/login?registered=1');
         return;
       }
       await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+      await api('/api/auth/me');
       onLogin(new URLSearchParams(window.location.search).get('next'));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed.');
@@ -39,6 +40,7 @@ export default function AuthPage({ register, onLogin }: { register: boolean; onL
         <button type="button" onClick={() => navigate('/')} className="text-sm text-slate-400 hover:text-white">← Back home</button>
         <h1 className="mt-8 text-3xl font-bold">{register ? 'Create account' : 'Welcome back'}</h1>
         <p className="mt-2 text-slate-400">{register ? 'Create a local account to use the classifier.' : 'Sign in to access the protected dashboard.'}</p>
+        {registered && <div role="status" className="mt-5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-200">Account created. Sign in with your new account.</div>}
         {error && <div role="alert" className="mt-5 rounded-xl border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-200">{error}</div>}
         <label className="mt-6 block text-sm text-slate-300">
           Email
