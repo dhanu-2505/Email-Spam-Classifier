@@ -1,0 +1,51 @@
+# Python
+env/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+.pytest_cache/
+.kaggle/
+
+# OS/editor
+.DS_Store
+.vscode/
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Data (keep raw dataset local)
+data/raw/*
+!data/raw/.gitkeep
+
+# Backend generated models / reports
+backend/models/*.joblib
+backend/models/*.json
+backend/models/*.db
+backend/models/*.sqlite3
+!backend/models/spam_classifier.joblib
+!backend/models/model_metadata.json
+reports/*.png
+reports/*.svg
+reports/*.html
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
+frontend/*.tsbuildinfo
+frontend/vite.config.js
+frontend/vite.config.d.ts
+
+# Secrets
+.env
+.env.*
+!.env.example
+!frontend/.env.example
+backend/.env
+*.pem
+*.key

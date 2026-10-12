@@ -1,0 +1,88 @@
+{
+  "dataset": {
+    "source": "data\\raw\\SMSSpamCollection.tsv",
+    "source_sha256": "55341228082b25b832a5868a5ab4b038142a57f70c676c123280af6ff457fe46",
+    "source_type": "UCI archive copy",
+    "dataset_type": "SMS messages (UCI SMS Spam Collection)",
+    "kaggle_dataset_id": null,
+    "kaggle_download_verified": false,
+    "kaggle_url": null,
+    "rows": 5169,
+    "spam_count": 653,
+    "ham_count": 4516
+  },
+  "selected_model": "linear_svc",
+  "model_artifact_sha256": "7a169450e5f4aa40512f4ee7529b74c91f8d1fb7f76960661e25a06b02cd24cc",
+  "comparison": [
+    {
+      "model": "naive_bayes",
+      "accuracy": 0.9825918762088974,
+      "precision": 0.9669421487603306,
+      "recall": 0.8931297709923665,
+      "f1": 0.9285714285714286,
+      "false_positive_rate": 0.004429678848283499,
+      "false_negative_rate": 0.10687022900763359,
+      "confusion_matrix": [
+        [
+          899,
+          4
+        ],
+        [
+          14,
+          117
+        ]
+      ]
+    },
+    {
+      "model": "logistic_regression",
+      "accuracy": 0.97678916827853,
+      "precision": 0.9022556390977443,
+      "recall": 0.916030534351145,
+      "f1": 0.9090909090909091,
+      "false_positive_rate": 0.014396456256921373,
+      "false_negative_rate": 0.08396946564885496,
+      "confusion_matrix": [
+        [
+          890,
+          13
+        ],
+        [
+          11,
+          120
+        ]
+      ]
+    },
+    {
+      "model": "linear_svc",
+      "accuracy": 0.9835589941972921,
+      "precision": 0.9523809523809523,
+      "recall": 0.916030534351145,
+      "f1": 0.933852140077821,
+      "false_positive_rate": 0.006644518272425249,
+      "false_negative_rate": 0.08396946564885496,
+      "confusion_matrix": [
+        [
+          897,
+          6
+        ],
+        [
+          11,
+          120
+        ]
+      ]
+    }
+  ],
+  "training_info": {
+    "random_state": 42,
+    "test_size": 0.2,
+    "stratified": true,
+    "evaluation_data": "stratified held-out test split (20%)",
+    "feature_engineering": "TF-IDF (1-2 grams)"
+  },
+  "evaluation": {
+    "accuracy": 0.9836,
+    "precision": 0.9524,
+    "recall": 0.916,
+    "f1": 0.9339
+  }
+}

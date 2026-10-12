@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: email-spam-classifier-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    plan: starter
+    disk:
+      name: spam-classifier-user-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: MODEL_PATH
+        value: models/spam_classifier.joblib
+      - key: USER_DB_PATH
+        value: /var/data/users.db
+      - key: AUTH_COOKIE_SECURE
+        value: "true"
+      - key: AUTH_COOKIE_SAMESITE
+        value: none
+      - key: CORS_ORIGINS
+        sync: false
