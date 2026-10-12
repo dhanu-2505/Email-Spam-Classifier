@@ -1,4 +1,5 @@
 import logging
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI
@@ -10,13 +11,22 @@ from fastapi.responses import JSONResponse
 from app.api.routes import router
 from app.api.auth import router as auth_router
 from app.config import CORS_ORIGINS, HOST, LOG_LEVEL, PORT
+from app.services.model_service import load_pipeline
 
 logging.basicConfig(level=getattr(logging, LOG_LEVEL.upper(), logging.INFO))
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    load_pipeline()
+    yield
+
 
 app = FastAPI(
     title="Email Spam Classifier API",
     version="1.0.0",
     description="Spam and ham message prediction API. The current model is trained on SMS messages.",
+    lifespan=lifespan,
 )
 
 origins = [origin.strip() for origin in CORS_ORIGINS.split(",") if origin.strip()]

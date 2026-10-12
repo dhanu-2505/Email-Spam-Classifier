@@ -56,13 +56,13 @@ git push origin main
 4. The blueprint uses a persistent disk mounted at `/var/data` for the SQLite account database. This is needed so local account registration survives service restarts.
 5. Check the Render health check at `/health`. It is public and confirms whether the model file loads; model and analytics routes require login.
 
-For the current service, open the Render dashboard and choose **Manual Deploy → Deploy latest commit** for `main` (`a8a35c6`). Then verify:
+After pushing the model-loading fix, open the Render dashboard and choose **Manual Deploy → Deploy latest commit** for `main`. Then verify:
 
 ```powershell
 Invoke-RestMethod "https://email-spam-classifier-htyy.onrender.com/health"
 ```
 
-Do not claim production classification works unless this reports `"model_loaded": true`. The model artifact and metadata are tracked in Git. If it remains false, inspect Render deploy logs and confirm `MODEL_PATH` resolves to `models/spam_classifier.joblib` under the service's `backend` root.
+The model artifact and metadata are tracked in Git, and the required `scikit-learn` and `joblib` dependencies are in `backend\requirements.txt`. Relative `MODEL_PATH` values are resolved from the `backend` directory, independent of Render's process working directory. On startup the backend logs the absolute path and artifact size when loading succeeds; if it fails, Render logs an error with the path and exception type/message, without logging secrets. If health still reports `"model_loaded": false`, inspect the Render startup log for that model-loading message and check the effective `MODEL_PATH` environment setting. Do not claim production classification works unless health reports `"model_loaded": true`.
 
 Do not set `MODEL_PATH` to a machine-specific Windows path. The blueprint uses `models/spam_classifier.joblib`, relative to the backend service root.
 
@@ -111,5 +111,22 @@ Set-Location "E:\Email spam classifier\frontend"
 npm ci
 npm run dev -- --host 127.0.0.1 --port 5173
 ```
+
+To run the backend tests and verify model startup locally:
+
+```powershell
+Set-Location "E:\Email spam classifier"
+.\.venv\Scripts\python.exe -m pytest backend\tests\test_backend.py -q
+Set-Location "E:\Email spam classifier\backend"
+& "..\.venv\Scripts\python.exe" -m uvicorn app.main:app --host 127.0.0.1 --port 8004
+```
+
+The startup log should say `Loaded spam classification model from ...\backend\models\spam_classifier.joblib`. In another PowerShell window, verify:
+
+```powershell
+Invoke-RestMethod "http://127.0.0.1:8004/health"
+```
+
+Expected local result with the checked-in artifact: `model_loaded` is `true`. Stop the local server with `Ctrl+C`.
 
 Local status and public deployment status are separate: a passing local build does not imply a live deployment.

@@ -1,9 +1,12 @@
+import logging
 import sqlite3
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
 from app.services import auth_service
+from app.services import model_service
 from app.main import app
 from app.services.model_service import get_model_metadata, load_pipeline
 from backend.ml.data_loader import load_dataset, validate_and_prepare_dataset
@@ -122,6 +125,39 @@ def test_model_artifact_matches_metadata():
     assert type(pipeline.named_steps["classifier"]).__name__ == "LinearSVC"
     assert metadata["selected_model"] == "linear_svc"
     assert metadata["model_artifact_sha256"]
+
+
+def test_model_load_resolves_relative_path_from_backend_when_cwd_changes(monkeypatch, tmp_path):
+    model_service._load_pipeline.cache_clear()
+    monkeypatch.setattr(model_service, "MODEL_PATH", Path("models/spam_classifier.joblib"))
+    monkeypatch.chdir(tmp_path)
+
+    pipeline = model_service.load_pipeline()
+
+    assert pipeline is not None
+    assert type(pipeline.named_steps["classifier"]).__name__ == "LinearSVC"
+
+
+def test_missing_model_artifact_is_logged(caplog, monkeypatch, tmp_path):
+    model_service._load_pipeline.cache_clear()
+    missing_path = tmp_path / "missing-model.joblib"
+    monkeypatch.setattr(model_service, "MODEL_PATH", missing_path)
+
+    with caplog.at_level(logging.ERROR, logger="app.services.model_service"):
+        assert model_service.load_pipeline() is None
+
+    assert "Model artifact does not exist at configured path" in caplog.text
+    assert str(missing_path) in caplog.text
+
+
+def test_startup_logs_successful_model_load(caplog):
+    model_service._load_pipeline.cache_clear()
+
+    with caplog.at_level(logging.INFO, logger="app.services.model_service"):
+        with TestClient(app):
+            pass
+
+    assert "Loaded spam classification model" in caplog.text
 
 
 def test_kaggle_sms_csv_format(tmp_path):

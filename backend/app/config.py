@@ -9,7 +9,12 @@ DATA_DIR = BASE_DIR / "data"
 APP_NAME = os.getenv("APP_NAME", "Email Spam Classifier")
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8003"))
-MODEL_PATH = os.getenv("MODEL_PATH", str(MODELS_DIR / "spam_classifier.joblib"))
+_configured_model_path = Path(os.getenv("MODEL_PATH", str(MODELS_DIR / "spam_classifier.joblib"))).expanduser()
+MODEL_PATH = (
+    _configured_model_path
+    if _configured_model_path.is_absolute()
+    else BACKEND_DIR / _configured_model_path
+).resolve()
 DATASET_PATH = os.getenv("DATASET_PATH", str(DATA_DIR / "processed" / "cleaned_dataset.csv"))
 CORS_ORIGINS = os.getenv(
     "CORS_ORIGINS",
