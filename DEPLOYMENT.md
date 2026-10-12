@@ -1,6 +1,6 @@
 # Deployment Guide
 
-The source is published at [dhanu-2505/Email-Spam-Classifier](https://github.com/dhanu-2505/Email-Spam-Classifier). This workspace has not verified the current public Render/Vercel URLs. The authentication changes described here are local until committed, pushed, and deployed. The checked-in model is currently identified as an extracted UCI SMS archive copy, not a verified Kaggle API download.
+The source is published at [dhanu-2505/Email-Spam-Classifier](https://github.com/dhanu-2505/Email-Spam-Classifier). Verified production origins are [Vercel](https://email-spam-classifier-three.vercel.app/) and [Render](https://email-spam-classifier-htyy.onrender.com/). Commit `a8a35c6` is pushed to GitHub, and the Vercel same-origin `/api` rewrite is live. Production registration/login and cookie-backed protected access were exercised successfully. However, `/health` currently reports `model_loaded: false`, so an authenticated `/api/predict` returns `503 Model is not available; retraining is required.` Production classification is not verified working. The checked-in model is identified as an extracted UCI SMS archive copy, not a verified Kaggle API download.
 
 ## Before publishing
 
@@ -55,6 +55,14 @@ git push origin main
 3. Render generates `SECRET_KEY` from the blueprint. Keep `ENVIRONMENT=production`, `AUTH_COOKIE_SECURE=true`, and `AUTH_COOKIE_SAMESITE=none`.
 4. The blueprint uses a persistent disk mounted at `/var/data` for the SQLite account database. This is needed so local account registration survives service restarts.
 5. Check the Render health check at `/health`. It is public and confirms whether the model file loads; model and analytics routes require login.
+
+For the current service, open the Render dashboard and choose **Manual Deploy → Deploy latest commit** for `main` (`a8a35c6`). Then verify:
+
+```powershell
+Invoke-RestMethod "https://email-spam-classifier-htyy.onrender.com/health"
+```
+
+Do not claim production classification works unless this reports `"model_loaded": true`. The model artifact and metadata are tracked in Git. If it remains false, inspect Render deploy logs and confirm `MODEL_PATH` resolves to `models/spam_classifier.joblib` under the service's `backend` root.
 
 Do not set `MODEL_PATH` to a machine-specific Windows path. The blueprint uses `models/spam_classifier.joblib`, relative to the backend service root.
 

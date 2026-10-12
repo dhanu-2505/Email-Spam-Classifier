@@ -7,8 +7,8 @@ A full-stack machine-learning demonstrator for spam and ham **message text**, wi
 - Current raw file: `data\raw\SMSSpamCollection.tsv`, 5,572 parsed rows (`ham`: 4,825; `spam`: 747), SHA-256 `55341228082b25b832a5868a5ab4b038142a57f70c676c123280af6ff457fe46`.
 - The file is an extracted UCI archive copy. Kaggle API credentials and the exact Kaggle archive are not present locally, so the file's Kaggle-download provenance has **not** been verified.
 - The selected saved pipeline is scikit-learn `TfidfVectorizer` + `LinearSVC`. Training evaluation uses a stratified held-out 20% test split.
-- Source code is published on GitHub at `dhanu-2505/Email-Spam-Classifier`; this workspace has not verified any public Render/Vercel URL.
-- The API and frontend have been exercised locally. The current authentication fixes still need to be pushed and deployed before they can affect a live site.
+- Source code is published on GitHub at `dhanu-2505/Email-Spam-Classifier`. Production Vercel and Render endpoints have been checked.
+- Production registration/login now work through Vercel's same-origin API proxy: `/api/auth/me` and protected history returned 200 after login. The protected classifier request passed authentication but returned 503 because live Render health reports `model_loaded: false`; deploy/fix the model artifact before claiming production classification works.
 - The UI is split by public/auth/dashboard/feature routes; the Analytics page loads Recharts only when that feature is selected.
 
 ## Project structure
