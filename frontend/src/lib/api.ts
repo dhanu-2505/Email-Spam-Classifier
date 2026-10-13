@@ -1,6 +1,4 @@
-const API_BASE_URL = import.meta.env.DEV
-  ? import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8003'
-  : '';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export class ApiError extends Error {
   constructor(message: string, public readonly status: number) {

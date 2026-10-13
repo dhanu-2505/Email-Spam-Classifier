@@ -52,7 +52,7 @@ export default function App() {
 
   const fallback = <div className="p-10 text-slate-300">Loading...</div>;
   if (path === '/' || path === '') {
-    return <Suspense fallback={fallback}><HomePage onLogin={() => navigate('/login')} /></Suspense>;
+    return <Suspense fallback={fallback}><HomePage onLogin={() => navigate('/login')} onRegister={() => navigate('/register')} /></Suspense>;
   }
   if (path === '/login' || path === '/register') {
     return (

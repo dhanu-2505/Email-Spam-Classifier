@@ -1,50 +1,97 @@
-import { Shield, ShieldAlert, Sparkles } from 'lucide-react';
+import { ArrowRight, BarChart3, CheckCircle2, Database, MailSearch, Shield, Sparkles, Tags, type LucideIcon } from 'lucide-react';
 
-function InfoCard({ title, text }: { title: string; text: string }) {
+function InfoCard({ icon: Icon, title, text }: { icon: LucideIcon; title: string; text: string }) {
   return (
-    <div className="card p-6">
-      <Sparkles className="text-violet-300" />
-      <h3 className="mt-4 font-bold">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-slate-400">{text}</p>
-    </div>
+    <article className="card home-feature-card">
+      <span className="home-feature-icon"><Icon size={19} /></span>
+      <h3>{title}</h3>
+      <p>{text}</p>
+    </article>
   );
 }
 
-export default function HomePage({ onLogin }: { onLogin: () => void }) {
+export default function HomePage({ onLogin, onRegister }: { onLogin: () => void; onRegister: () => void }) {
   return (
-    <div className="min-h-screen text-slate-100">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
-        <div className="flex items-center gap-3 text-lg font-bold"><Shield className="text-violet-300" /> Email Spam Classifier</div>
-        <button onClick={onLogin} className="rounded-xl bg-violet-600 px-5 py-2 font-semibold hover:bg-violet-500">Login</button>
+    <div className="home-page">
+      <nav className="home-nav">
+        <a href="/" className="home-brand">
+          <span className="home-brand-icon"><Shield size={19} /></span>
+          <span>Email Spam Classifier</span>
+        </a>
+        <div className="home-nav-links">
+          <a href="#features">Features</a>
+          <a href="#model">About the model</a>
+          <button className="home-login" onClick={onLogin}>Login</button>
+          <button className="home-register" onClick={onRegister}>Create account <ArrowRight size={15} /></button>
+        </div>
       </nav>
-      <main className="mx-auto max-w-7xl space-y-20 px-6 py-16">
-        <section className="grid items-center gap-12 lg:grid-cols-2">
-          <div>
-            <span className="badge bg-violet-500/10 text-violet-200">NLP-powered threat awareness</span>
-            <h1 className="mt-5 text-5xl font-black tracking-tight sm:text-6xl">Spot suspicious messages before they reach your inbox.</h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-slate-300">A transparent machine-learning demonstrator that classifies spam and ham text using the approved UCI SMS Spam Collection dataset.</p>
-            <div className="mt-8 flex gap-3">
-              <button onClick={onLogin} className="rounded-xl bg-violet-600 px-5 py-3 font-semibold hover:bg-violet-500">Login to classify</button>
-              <a href="#how" className="rounded-xl border border-slate-700 px-5 py-3 font-semibold hover:border-violet-400">Learn more</a>
+
+      <main>
+        <section className="home-hero">
+          <div className="home-hero-copy">
+            <span className="home-eyebrow"><Sparkles size={14} /> A transparent machine-learning demo</span>
+            <h1>Know what your message might be hiding.</h1>
+            <p>Check suspicious message text, review the model’s evaluation, and explore the words it learned to associate with spam.</p>
+            <div className="home-hero-actions">
+              <button onClick={onLogin} className="home-primary">Open classifier <ArrowRight size={17} /></button>
+              <button onClick={onRegister} className="home-secondary">Create a free account</button>
             </div>
+            <div className="home-trust-note"><CheckCircle2 size={16} /> No email inbox connection. Test message text only.</div>
           </div>
-          <div className="card p-8">
-            <ShieldAlert className="h-16 w-16 text-sky-300" />
-            <h2 className="mt-6 text-2xl font-bold">Signal, not certainty</h2>
-            <p className="mt-3 text-slate-300">Predictions are statistical indicators. Always verify links, senders, and requests independently.</p>
+
+          <div className="home-preview card">
+            <div className="home-preview-top">
+              <div><span className="home-preview-label">MESSAGE CHECK</span><h2>Pattern detected</h2></div>
+              <span className="home-preview-icon"><MailSearch size={20} /></span>
+            </div>
+            <div className="home-message">
+              <span>MESSAGE</span>
+              <p>“You have won a prize! Call now to claim your reward.”</p>
+            </div>
+            <div className="home-result">
+              <span className="home-result-dot" />
+              <div><strong>Spam-like signals</strong><small>Example preview · Try your own after login</small></div>
+              <span className="home-result-score">REVIEW</span>
+            </div>
+            <div className="home-preview-foot">Predictions are indicators, not proof. Always check the sender and links.</div>
           </div>
         </section>
-        <section id="how" className="grid gap-5 md:grid-cols-3">
-          <InfoCard title="Clean text" text="Normalize message text while preserving useful spam signals such as links and urgency." />
-          <InfoCard title="Learn patterns" text="Compare Naive Bayes, Logistic Regression, and Linear SVM with TF-IDF features." />
-          <InfoCard title="Inspect results" text="Review real evaluation metrics, feature signals, and session prediction history." />
+
+        <section className="home-stat-strip" aria-label="Model overview">
+          <div><strong>5,169</strong><span>messages in evaluated dataset</span></div>
+          <div><strong>98.4%</strong><span>held-out accuracy</span></div>
+          <div><strong>Linear SVM</strong><span>selected text classifier</span></div>
+          <div><strong>SMS</strong><span>training data type</span></div>
         </section>
-        <section className="card p-8">
-          <h2 className="text-2xl font-bold">Built for transparent experimentation</h2>
-          <p className="mt-3 max-w-3xl text-slate-300">The current model is trained on SMS messages, not real email. The project supports the SMS collection and SpamAssassin as separate dataset choices.</p>
+
+        <section id="features" className="home-features">
+          <div className="home-section-heading">
+            <span className="home-eyebrow">YOUR WORKSPACE</span>
+            <h2>Everything useful, one place.</h2>
+            <p>Sign in to explore the model and its results—not just a single prediction box.</p>
+          </div>
+          <div className="home-feature-grid">
+            <InfoCard icon={MailSearch} title="Classify a message" text="Paste a message and get a spam/ham prediction with influential words." />
+            <InfoCard icon={BarChart3} title="Explore analytics" text="Compare models using accuracy, precision, recall, and F1 on held-out data." />
+            <InfoCard icon={Tags} title="Inspect learned terms" text="See which text features the trained classifier associates with each class." />
+            <InfoCard icon={Database} title="Understand the data" text="Review dataset counts and see where the local training data and account database live." />
+          </div>
+        </section>
+
+        <section id="model" className="home-model-note">
+          <div className="home-model-mark"><Shield size={22} /></div>
+          <div>
+            <h2>About this model</h2>
+            <p>It was trained on the UCI SMS Spam Collection, not real email. Results on email messages may differ. The model is a learning aid, not a security guarantee.</p>
+          </div>
+          <button onClick={onLogin} className="home-text-link">Explore the results <ArrowRight size={16} /></button>
         </section>
       </main>
-      <footer className="border-t border-slate-800 px-6 py-8 text-center text-sm text-slate-400">Dataset: UCI SMS Spam Collection. No public deployment is claimed.</footer>
+
+      <footer className="home-footer">
+        <span>Email Spam Classifier</span>
+        <span>Local demo · UCI SMS Spam Collection · Verify suspicious messages independently</span>
+      </footer>
     </div>
   );
 }

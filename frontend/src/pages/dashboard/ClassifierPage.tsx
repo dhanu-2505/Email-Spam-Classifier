@@ -1,5 +1,10 @@
 import { Prediction } from '../../types';
 
+const examples = [
+  { label: 'Suspicious offer', message: 'Congratulations! You have won a free prize. Call now to claim your reward!' },
+  { label: 'Everyday message', message: 'Hi, are we still meeting for lunch after class today?' },
+];
+
 export default function ClassifierPage({
   message,
   setMessage,
@@ -14,25 +19,53 @@ export default function ClassifierPage({
   result: Prediction | null;
 }) {
   return (
-    <section className="card p-6">
-      <h1 className="text-2xl font-bold">Classifier</h1>
-      <p className="mt-2 text-sm text-slate-400">Submit text to the trained UCI SMS model.</p>
-      <textarea
-        value={message}
-        onChange={event => setMessage(event.target.value)}
-        rows={9}
-        maxLength={5000}
-        className="mt-5 w-full rounded-xl border border-slate-700 bg-slate-950 p-4"
-        placeholder="Enter a message..."
-      />
-      <button onClick={predict} disabled={busy} className="mt-3 rounded-xl bg-violet-600 px-5 py-3 font-semibold disabled:opacity-50">
-        {busy ? 'Classifying...' : 'Classify message'}
+    <section className="classifier-shell">
+      <div className="classifier-header-block">
+        <span className="home-eyebrow">MESSAGE ANALYSIS</span>
+        <h1>Classifier</h1>
+        <p>Paste a message below to see whether it resembles spam or a legitimate message.</p>
+      </div>
+
+      <div className="classifier-compose card">
+        <div className="classifier-compose-heading">
+          <div><strong>Your message</strong><span>Text stays in this app and is sent to the local classifier.</span></div>
+          <span className="classifier-character-count">{message.length}/5000</span>
+        </div>
+        <textarea
+          value={message}
+          onChange={event => setMessage(event.target.value)}
+          rows={7}
+          maxLength={5000}
+          className="classifier-input"
+          aria-label="Message to classify"
+          placeholder="Paste or type a message here..."
+        />
+        <div className="classifier-examples">
+          <span>Try an example</span>
+          {examples.map(example => (
+            <button key={example.label} type="button" onClick={() => setMessage(example.message)}>{example.label}</button>
+          ))}
+          {message && <button type="button" className="classifier-clear" onClick={() => setMessage('')}>Clear</button>}
+        </div>
+      </div>
+
+      <button onClick={predict} disabled={busy} className="classifier-button">
+        {busy ? 'Checking message...' : 'Classify message'}
       </button>
+
       {result && (
-        <div className="mt-6 rounded-xl border border-slate-700 p-4" aria-live="polite">
-          <strong className="text-2xl uppercase">{result.label}</strong>
-          <p className="mt-2 text-slate-300">{result.explanation}</p>
-          {result.top_features.length > 0 && <p className="mt-3 text-sm text-violet-200">Influential tokens: {result.top_features.join(', ')}</p>}
+        <div className={`classifier-result ${result.label === 'spam' ? 'is-spam' : 'is-ham'}`} aria-live="polite">
+          <div className="classifier-result-heading">
+            <span className="classifier-result-label">{result.label === 'spam' ? 'Spam-like patterns detected' : 'Looks like a legitimate message'}</span>
+            {result.confidence !== null && result.confidence !== undefined && (
+              <span className="classifier-confidence">{Math.round(result.confidence * 100)}% confidence</span>
+            )}
+          </div>
+          <p>{result.explanation}</p>
+          {result.top_features.length > 0 && (
+            <div className="classifier-feature-list"><span>Influential terms</span>{result.top_features.map(feature => <span className="classifier-feature" key={feature}>{feature}</span>)}</div>
+          )}
+          <small>Model predictions are statistical estimates, not proof. Verify the sender and links yourself.</small>
         </div>
       )}
     </section>

@@ -22,7 +22,11 @@ export default function DashboardPage({
   onLogout: () => Promise<void>;
 }) {
   const [model, setModel] = useState<ModelInfo | null>(null);
+  const [modelLoading, setModelLoading] = useState(true);
+  const [modelError, setModelError] = useState('');
   const [keywords, setKeywords] = useState<KeywordInsights | null>(null);
+  const [keywordsLoading, setKeywordsLoading] = useState(true);
+  const [keywordsError, setKeywordsError] = useState('');
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [message, setMessage] = useState('');
   const [result, setResult] = useState<Prediction | null>(null);
@@ -33,10 +37,12 @@ export default function DashboardPage({
     let active = true;
     api<ModelInfo>('/api/model-info')
       .then(data => { if (active) setModel(data); })
-      .catch(err => { if (active) setError(err instanceof Error ? err.message : 'Unable to load model information.'); });
+      .catch(err => { if (active) setModelError(err instanceof Error ? err.message : 'Unable to load model information.'); })
+      .finally(() => { if (active) setModelLoading(false); });
     api<{ keywords: KeywordInsights }>('/api/keywords')
       .then(data => { if (active) setKeywords(data.keywords); })
-      .catch(err => { if (active) setError(err instanceof Error ? err.message : 'Unable to load keyword insights.'); });
+      .catch(err => { if (active) setKeywordsError(err instanceof Error ? err.message : 'Unable to load keyword insights.'); })
+      .finally(() => { if (active) setKeywordsLoading(false); });
     return () => { active = false; };
   }, []);
 
@@ -73,52 +79,63 @@ export default function DashboardPage({
       content = <ClassifierPage message={message} setMessage={setMessage} predict={predict} busy={busy} result={result} />;
       break;
     case 'analytics':
-      content = <AnalyticsPage model={model} comparison={comparison} />;
+      content = <AnalyticsPage model={model} comparison={comparison} loading={modelLoading} error={modelError} />;
       break;
     case 'keywords':
-      content = <KeywordsPage data={keywords} />;
+      content = <KeywordsPage data={keywords} loading={keywordsLoading} error={keywordsError} />;
       break;
     case 'history':
       content = <HistoryPage data={history} clear={() => setHistory([])} />;
       break;
     case 'dashboard':
     default:
-      content = <OverviewPage model={model} />;
+      content = <OverviewPage model={model} loading={modelLoading} error={modelError} onNavigate={onNavigate} />;
   }
 
   return (
-    <div className="min-h-screen px-4 py-8 text-slate-100">
-      <div className="mx-auto max-w-7xl">
-        <header className="mb-6 flex items-center justify-between">
-          <button onClick={() => onNavigate('/dashboard')} className="flex items-center gap-3 text-xl font-bold">
-            <Shield className="text-violet-300" /> Classifier
+    <div className="dashboard-shell">
+      <aside className="dashboard-sidebar" aria-label="Dashboard navigation">
+        <div className="sidebar-brand">
+          <div className="brand-icon">
+            <Shield size={18} />
+          </div>
+          <span>Classifier</span>
+        </div>
+
+        <nav className="sidebar-nav">
+          <button className={section === 'dashboard' ? 'nav-item active' : 'nav-item neutral'} aria-current={section === 'dashboard' ? 'page' : undefined} onClick={() => onNavigate('/dashboard')}>
+            Dashboard
           </button>
+          <button className={section === 'classifier' ? 'nav-item active' : 'nav-item neutral'} aria-current={section === 'classifier' ? 'page' : undefined} onClick={() => onNavigate('/classifier')}>
+            Classifier
+          </button>
+          <button className={section === 'analytics' ? 'nav-item active' : 'nav-item neutral'} aria-current={section === 'analytics' ? 'page' : undefined} onClick={() => onNavigate('/analytics')}>
+            Analytics
+          </button>
+          <button className={section === 'keywords' ? 'nav-item active' : 'nav-item neutral'} aria-current={section === 'keywords' ? 'page' : undefined} onClick={() => onNavigate('/keywords')}>
+            Keywords
+          </button>
+          <button className={section === 'history' ? 'nav-item active' : 'nav-item neutral'} aria-current={section === 'history' ? 'page' : undefined} onClick={() => onNavigate('/history')}>
+            History
+          </button>
+        </nav>
+      </aside>
+
+      <main className="dashboard-main">
+        <header className="dashboard-header">
+          <div />
           <button
             onClick={() => onLogout().catch(err => setError(err instanceof Error ? err.message : 'Logout failed.'))}
-            className="rounded-xl border border-slate-700 px-3 py-2 text-sm"
+            className="header-logout"
           >
-            <LogOut size={15} className="mr-1 inline" /> Logout
+            <LogOut size={15} />
+            <span>Logout</span>
           </button>
         </header>
-        <div className="grid gap-6 lg:grid-cols-[190px_1fr]">
-          <aside className="card h-fit p-3" aria-label="Dashboard navigation">
-            {sections.map(item => (
-              <button
-                key={item}
-                onClick={() => onNavigate(`/${item}`)}
-                aria-current={section === item ? 'page' : undefined}
-                className={`block w-full rounded-lg px-3 py-2 text-left text-sm capitalize ${section === item ? 'bg-violet-600' : 'text-slate-300 hover:bg-slate-800'}`}
-              >
-                {item}
-              </button>
-            ))}
-          </aside>
-          <main className="space-y-6">
-            {error && <div role="alert" className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-200">{error}</div>}
-            <Suspense fallback={<div className="card p-6 text-slate-300">Loading section...</div>}>{content}</Suspense>
-          </main>
-        </div>
-      </div>
+
+        {error && <div role="alert" className="main-alert">{error}</div>}
+        <Suspense fallback={<div className="card p-6 text-slate-300">Loading section...</div>}>{content}</Suspense>
+      </main>
     </div>
   );
 }

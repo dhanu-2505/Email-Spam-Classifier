@@ -67,7 +67,7 @@ npm ci
 npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
-In Vite development mode the frontend defaults to `http://127.0.0.1:8003`; set `VITE_API_BASE_URL` if your backend uses another port. Production uses the same-origin `/api/*` rewrite in `frontend\vercel.json`; do not set a cross-site `VITE_API_BASE_URL` in Vercel, since third-party cookie restrictions can prevent browser sessions from working.
+In Vite development mode, API requests use the same origin as the frontend and are proxied to `http://127.0.0.1:8003`. This keeps the authentication cookie available to the browser even when Vite selects a port other than `5173`. If the backend uses another port, update the proxy target in `frontend\vite.config.ts`. Production uses the same-origin `/api/*` rewrite in `frontend\vercel.json`; do not set a cross-site `VITE_API_BASE_URL` in Vercel, since third-party cookie restrictions can prevent browser sessions from working.
 
 ## API
 

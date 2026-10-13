@@ -11,7 +11,15 @@ function TermList({ title, terms }: { title: string; terms: string[] }) {
   );
 }
 
-export default function KeywordsPage({ data }: { data: KeywordInsights | null }) {
+export default function KeywordsPage({
+  data,
+  loading,
+  error,
+}: {
+  data: KeywordInsights | null;
+  loading: boolean;
+  error: string;
+}) {
   return (
     <section className="card p-6">
       <h1 className="text-2xl font-bold">Keyword insights</h1>
@@ -21,7 +29,11 @@ export default function KeywordsPage({ data }: { data: KeywordInsights | null })
           <TermList title="Spam-associated" terms={data.spam_terms} />
           <TermList title="Ham-associated" terms={data.ham_terms} />
         </div>
-      ) : <p className="mt-6 text-slate-400">Loading keyword insights...</p>}
+      ) : (
+        <p role={error ? 'alert' : undefined} className={`mt-6 ${error ? 'text-rose-300' : 'text-slate-400'}`}>
+          {loading ? 'Loading keyword insights...' : error ? `Keyword insights unavailable: ${error}` : 'No keyword insights are available.'}
+        </p>
+      )}
     </section>
   );
 }

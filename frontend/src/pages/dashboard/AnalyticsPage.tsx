@@ -3,7 +3,17 @@ import { EvaluationMetrics, ModelComparison, ModelInfo } from '../../types';
 
 const metrics: Array<keyof EvaluationMetrics> = ['accuracy', 'precision', 'recall', 'f1'];
 
-export default function AnalyticsPage({ model, comparison }: { model: ModelInfo | null; comparison: ModelComparison[] }) {
+export default function AnalyticsPage({
+  model,
+  comparison,
+  loading,
+  error,
+}: {
+  model: ModelInfo | null;
+  comparison: ModelComparison[];
+  loading: boolean;
+  error: string;
+}) {
   return (
     <section className="card p-6">
       <h1 className="text-2xl font-bold">Analytics</h1>
@@ -14,7 +24,7 @@ export default function AnalyticsPage({ model, comparison }: { model: ModelInfo 
           return (
             <div className="rounded-xl bg-slate-950 p-4" key={metric}>
               <span className="text-sm text-slate-400">{metric}</span>
-              <strong className="mt-2 block text-xl">{value === undefined ? 'Loading...' : `${(value * 100).toFixed(1)}%`}</strong>
+              <strong className="mt-2 block text-xl">{value === undefined ? (loading ? 'Loading...' : 'Unavailable') : `${(value * 100).toFixed(1)}%`}</strong>
             </div>
           );
         })}
@@ -32,7 +42,11 @@ export default function AnalyticsPage({ model, comparison }: { model: ModelInfo 
               <Bar dataKey="f1" fill="#38bdf8" />
             </BarChart>
           </ResponsiveContainer>
-        ) : <p className="text-slate-400">Loading evaluation data...</p>}
+        ) : (
+          <p role={error ? 'alert' : undefined} className={error ? 'text-rose-300' : 'text-slate-400'}>
+            {loading ? 'Loading evaluation data...' : error ? `Evaluation data unavailable: ${error}` : 'No evaluation data is available.'}
+          </p>
+        )}
       </div>
     </section>
   );
