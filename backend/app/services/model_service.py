@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional
 
 import joblib
 
-from app.config import MODEL_PATH
+from app.config import BACKEND_DIR, MODEL_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -43,19 +43,28 @@ def _load_pipeline(path: str, modified_ns: int, size: int) -> Optional[Any]:
 def load_pipeline() -> Optional[Any]:
     model_path = Path(MODEL_PATH).expanduser()
     if not model_path.is_absolute():
-        model_path = Path(__file__).resolve().parents[2] / model_path
+        model_path = BACKEND_DIR / model_path
     model_path = model_path.resolve()
+    logger.debug("Resolved model artifact path: %s", model_path)
     try:
         stat = model_path.stat()
     except FileNotFoundError:
         return _load_pipeline(str(model_path), -1, -1)
+    except OSError as exc:
+        logger.exception(
+            "Unable to access model artifact at %s (%s): %s",
+            model_path,
+            type(exc).__name__,
+            exc,
+        )
+        return None
     return _load_pipeline(str(model_path), stat.st_mtime_ns, stat.st_size)
 
 
 def get_model_metadata() -> Dict[str, Any]:
     model_path = Path(MODEL_PATH).expanduser()
     if not model_path.is_absolute():
-        model_path = Path(__file__).resolve().parents[2] / model_path
+        model_path = BACKEND_DIR / model_path
     model_path = model_path.resolve()
     metadata_path = model_path.with_name("model_metadata.json")
     if not metadata_path.exists():

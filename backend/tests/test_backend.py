@@ -39,6 +39,7 @@ def test_health_endpoint(client):
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "ok"
+    assert data["model_loaded"] is True
 
 
 def test_protected_endpoint_requires_authentication(client):
@@ -153,11 +154,13 @@ def test_missing_model_artifact_is_logged(caplog, monkeypatch, tmp_path):
 def test_startup_logs_successful_model_load(caplog):
     model_service._load_pipeline.cache_clear()
 
-    with caplog.at_level(logging.INFO, logger="app.services.model_service"):
+    with caplog.at_level(logging.INFO):
         with TestClient(app):
             pass
 
     assert "Loaded spam classification model" in caplog.text
+    assert f"Loading model artifact from {model_service.MODEL_PATH}" in caplog.text
+    assert "Model startup check:" in caplog.text
 
 
 def test_kaggle_sms_csv_format(tmp_path):

@@ -1,5 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI
@@ -10,15 +11,19 @@ from fastapi.responses import JSONResponse
 
 from app.api.routes import router
 from app.api.auth import router as auth_router
-from app.config import CORS_ORIGINS, HOST, LOG_LEVEL, PORT
+from app.config import CORS_ORIGINS, HOST, LOG_LEVEL, MODEL_PATH, PORT
 from app.services.model_service import load_pipeline
 
 logging.basicConfig(level=getattr(logging, LOG_LEVEL.upper(), logging.INFO))
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    load_pipeline()
+    model_path = Path(MODEL_PATH).expanduser().resolve()
+    logger.info("Loading model artifact from %s", model_path)
+    pipeline = load_pipeline()
+    logger.info("Model startup check: path=%s loaded=%s", model_path, pipeline is not None)
     yield
 
 

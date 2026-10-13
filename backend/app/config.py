@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-BACKEND_DIR = BASE_DIR / "backend"
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = BACKEND_DIR.parent
 MODELS_DIR = BACKEND_DIR / "models"
 DATA_DIR = BASE_DIR / "data"
 

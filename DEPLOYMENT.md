@@ -56,6 +56,8 @@ git push origin main
 4. The blueprint uses a persistent disk mounted at `/var/data` for the SQLite account database. This is needed so local account registration survives service restarts.
 5. Check the Render health check at `/health`. It is public and confirms whether the model file loads; model and analytics routes require login.
 
+The backend resolves its directory from `backend\app\config.py`, not the process working directory. With Render's `rootDir: backend`, set `MODEL_PATH` to the relative value `models/spam_classifier.joblib`; do not use `/backend/models/...` or a Windows path. The deployable model and metadata must remain tracked at `backend\models\spam_classifier.joblib` and `backend\models\model_metadata.json`.
+
 After pushing the model-loading fix, open the Render dashboard and choose **Manual Deploy → Deploy latest commit** for `main`. Then verify:
 
 ```powershell
@@ -72,7 +74,7 @@ Do not set `MODEL_PATH` to a machine-specific Windows path. The blueprint uses `
 2. Build command: `npm run build`; output directory: `dist`.
 3. Deploy. `frontend\vercel.json` sends `/api/*` through a same-origin rewrite to the Render API and routes other direct page requests back to the SPA entry point. Keep the rewrite destination synchronized with the actual Render URL. Do not set production `VITE_API_BASE_URL`; the browser must call the same Vercel origin so the session cookie is first-party.
 
-After Vercel assigns the final production origin, update Render's `CORS_ORIGINS` to exactly that origin and redeploy the backend. Local development may call Render directly, but production browser requests go through Vercel's same-origin rewrite so browser privacy settings do not need to allow third-party cookies.
+After Vercel assigns the final production origin, set Render's `CORS_ORIGINS` to exactly that origin (for this deployment: `https://email-spam-classifier-three.vercel.app`) and redeploy the backend. The production frontend uses the Vercel same-origin `/api/*` rewrite and includes credentials; leave `VITE_API_BASE_URL` unset in Vercel. The frontend intentionally ignores that variable in production so it cannot bypass the same-origin session-cookie proxy. Local development may use `VITE_API_BASE_URL` or the Vite `/api` proxy.
 
 ### Account storage and login troubleshooting
 
